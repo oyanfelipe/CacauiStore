@@ -38,7 +38,7 @@ export default function BoxBuilder() {
       name: `Caixa 6 (${creme6} Creme / ${amendoa6} Amêndoa)`,
       price: 21.99,
       quantity: 1,
-      image: "/images/caixa6.png",
+      image: "/images/caixa6.png" ,
     });
   };
 
