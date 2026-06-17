@@ -367,8 +367,11 @@ Acho que presentes carregam mais valor quando criam uma lembrança. 🤎
         onClick={() => setIsOpen(!isOpen)}
         className="
     fixed
-    bottom-6
-    right-6
+bottom-24
+right-5
+
+md:bottom-8
+md:right-8
     z-[999]
 
     w-16

@@ -22,16 +22,20 @@ export default function ProductCard({
 
   const [added, setAdded] = useState(false);
 
-  const addItem = useCartStore(
-    (state) => state.addItem
-  );
+  const addItem = useCartStore((state) => state.addItem);
 
   return (
-  <div
-    className="
+    <div
+      className="
   group
   relative
+
+  min-w-[320px]
+  md:min-w-[420px]
+
   rounded-[30px]
+
+  snap-center
 
   hover:-translate-y-2
   hover:scale-[1.02]
@@ -39,10 +43,9 @@ export default function ProductCard({
   transition-all
   duration-500
 "
-  >
-    
-    <div
-      className="
+    >
+      <div
+        className="
         absolute
         inset-[1px]
         rounded-[29px]
@@ -50,9 +53,9 @@ export default function ProductCard({
         border-white/5
         pointer-events-none
       "
-    />
-    <div
-  className="
+      />
+      <div
+        className="
     absolute
     inset-0
 rounded-[29px]
@@ -63,16 +66,14 @@ rounded-[29px]
 
     pointer-events-none
   "
-/>
+      />
 
-    <div className="relative">
-
-      <div className="relative p-3 pb-0">
-
-        <img
-          src={image}
-          alt={name}
-          className="
+      <div className="relative">
+        <div className="relative p-3 pb-0">
+          <img
+            src={image}
+            alt={name}
+            className="
   w-full
   h-[220px]
   object-cover
@@ -83,10 +84,10 @@ rounded-[29px]
 
   group-hover:scale-99
 "
-        />
+          />
 
-        <div
-          className="
+          <div
+            className="
             absolute
             inset-x-3
             top-3
@@ -102,10 +103,10 @@ rounded-[29px]
             
             group-hover:scale-99
           "
-        />
+          />
 
-        <span
-          className="
+          <span
+            className="
             absolute
             top-6
             left-6
@@ -121,12 +122,12 @@ rounded-[29px]
             text-xs
             font-medium
           "
-        >
-          Mais pedido
-        </span>
+          >
+            Mais pedido
+          </span>
 
-        <button
-          className="
+          <button
+            className="
             absolute
             top-6
             right-6
@@ -134,52 +135,49 @@ rounded-[29px]
             text-[#F5E8D6]
             text-lg
           "
-        >
-          ♡
-        </button>
+          >
+            ♡
+          </button>
+        </div>
 
-      </div>
-
-      <div className="px-6 pb-6 pt-4">
-
-        <h3
-          className="
+        <div className="px-6 pb-6 pt-4">
+          <h3
+            className="
             text-[#F5E8D6]
             font-serif
             text-[30px]
             leading-none
             mb-3
           "
-        >
-          {name}
-        </h3>
+          >
+            {name}
+          </h3>
 
-        <p
-          className="
+          <p
+            className="
             text-[#D5C0A6]
             text-sm
             leading-relaxed
             mb-5
           "
-        >
-          {description}
-        </p>
+          >
+            {description}
+          </p>
 
-        <div
-          className="
+          <div
+            className="
             text-[#F5E8D6]
             text-[34px]
             font-serif
             mb-5
           "
-        >
-          R$ {price.toFixed(2)}
-        </div>
+          >
+            R$ {price.toFixed(2)}
+          </div>
 
-        <div className="flex items-center justify-between">
-
-          <div
-            className="
+          <div className="flex items-center justify-between">
+            <div
+              className="
               flex
               items-center
 
@@ -191,14 +189,10 @@ bg-white/[0.03]
 backdrop-blur-md
               overflow-hidden
             "
-          >
-            <button
-              onClick={() =>
-                setQuantity((prev) =>
-                  Math.max(1, prev - 1)
-                )
-              }
-              className="
+            >
+              <button
+                onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                className="
   px-4
   py-2
 
@@ -208,24 +202,22 @@ backdrop-blur-md
 
   transition
 "
-            >
-              −
-            </button>
+              >
+                −
+              </button>
 
-            <span
-              className="
+              <span
+                className="
                 px-4
                 text-[#F5E8D6]
               "
-            >
-              {quantity}
-            </span>
+              >
+                {quantity}
+              </span>
 
-            <button
-              onClick={() =>
-                setQuantity((prev) => prev + 1)
-              }
-              className="
+              <button
+                onClick={() => setQuantity((prev) => prev + 1)}
+                className="
   px-4
   py-2
 
@@ -235,28 +227,28 @@ backdrop-blur-md
 
   transition
 "
-            >
-              +
-            </button>
-          </div>
+              >
+                +
+              </button>
+            </div>
 
-          <button
-            onClick={() => {
-  addItem({
-    id: `${id}-${Date.now()}`,
-    name,
-    image,
-    price,
-    quantity,
-  });
+            <button
+              onClick={() => {
+                addItem({
+                  id: `${id}-${Date.now()}`,
+                  name,
+                  image,
+                  price,
+                  quantity,
+                });
 
-  setAdded(true);
+                setAdded(true);
 
-  setTimeout(() => {
-    setAdded(false);
-  }, 1000);
-}}
-            className="
+                setTimeout(() => {
+                  setAdded(false);
+                }, 1000);
+              }}
+              className="
   flex
   items-center
   gap-3
@@ -284,17 +276,14 @@ backdrop-blur-md
 
   active:scale-95
 "
-          >
-            {added ? "Adicionado ✓" : "Adicionar"}
+            >
+              {added ? "Adicionado ✓" : "Adicionar"}
 
-            <span>🛍</span>
-          </button>
-
+              <span>🛍</span>
+            </button>
+          </div>
         </div>
-
       </div>
-
     </div>
-  </div>
-);
+  );
 }

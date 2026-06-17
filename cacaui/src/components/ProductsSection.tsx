@@ -30,19 +30,16 @@ export default function ProductsSection() {
       />
 
       <div className="container mx-auto max-w-[1400px] px-8 relative z-10">
-
         <div
           className="
             grid
-            lg:grid-cols-[340px_700px]
+            lg:grid-cols-[340px_minmax(0,1fr)]
             gap-12
             items-start
           "
         >
-
           {/* Texto */}
           <div className="pt-8">
-
             <span
               className="
                 uppercase
@@ -78,8 +75,7 @@ export default function ProductsSection() {
                 leading-relaxed
               "
             >
-              Receitas exclusivas feitas para
-              surpreender e encantar.
+              Receitas exclusivas feitas para surpreender e encantar.
             </p>
 
             <button
@@ -101,16 +97,24 @@ export default function ProductsSection() {
             >
               Ver todos os produtos →
             </button>
-
           </div>
 
           {/* Cards */}
+
           <div
             className="
-              flex
-              gap-6
-              items-start
-            "
+    flex
+    gap-6
+    items-start
+
+    overflow-x-auto
+    pb-4
+
+    snap-x
+    snap-mandatory
+
+    scrollbar-hide
+  "
           >
             <ProductCard
               id="cacaui-creme"
@@ -128,9 +132,7 @@ export default function ProductsSection() {
               price={2.8}
             />
           </div>
-
         </div>
-
       </div>
     </section>
   );

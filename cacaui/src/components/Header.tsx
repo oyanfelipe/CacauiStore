@@ -8,86 +8,92 @@ interface HeaderProps {
   onOpenCart: () => void;
 }
 
-export default function Header({
-  onOpenCart,
-}: HeaderProps) {
+export default function Header({ onOpenCart }: HeaderProps) {
+  const items = useCartStore((state) => state.items);
 
-  const items = useCartStore(
-    (state) => state.items
-  );
-
-const totalItems = items.reduce(
-  (acc, item) => acc + item.quantity,
-  0
-);
-  const cartItemsCount = items.reduce(
-    (acc, item) => acc + item.quantity,
-    0
-  );
+  const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
+  const cartItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#F7F2EB]/90 backdrop-blur border-b border-[#E8DDD1]">
+    <header
+      className="
+    sticky
+    top-0
+    z-50
+
+    bg-[#2A1A12]/95
+
+    backdrop-blur-xl
+
+    border-b
+    border-[#B98A5D]/20
+
+    shadow-lg
+  "
+    >
+      {" "}
       <div className="container mx-auto px-6 lg:px-16 h-20 flex items-center justify-between">
-
         <Link href="/">
-          <div className=" text-center">
-            <h1 className="text-5xl font-serif text-[#3A2418]">
-              Cacauí
-            </h1>
-
-            <p className="text-xs tracking-widest uppercase text-[#A17C52]">
-              Doce Encontro
-            </p>
-          </div>
+          <img
+            src="/footer-cacaui.png"
+            alt="Cacauí"
+            className="
+      h-16
+      w-auto
+      object-contain
+    "
+          />
         </Link>
 
         <nav className="hidden md:flex items-center gap-10">
+          <a
+            href="#"
+            className="text-[#F5E8D6]
+  hover:text-[#D5B18A] transition-colors"
+          >
+            Início
+          </a>
 
-  <a href="#"
-  className="text-[#3A2418] hover:text-[#A17C52] transition-colors"
->
-    Início
-  </a>
+          <a
+            href="#sabores"
+            className="text-[#F5E8D6]
+  hover:text-[#D5B18A] transition-colors"
+          >
+            Nossos Encontros
+          </a>
 
-  <a href="#sabores"
-      className="text-[#3A2418] hover:text-[#A17C52] transition-colors"
+          <a
+            href="#historia"
+            className="text-[#F5E8D6]
+  hover:text-[#D5B18A] transition-colors"
+          >
+            Por Trás da Cacauí
+          </a>
 
-  >
-    Nossos Encontros
-  </a>
-
-  <a href="#historia"
-      className="text-[#3A2418] hover:text-[#A17C52] transition-colors"
->
-    Por Trás da Cacauí
-  </a>
-
-  <a href="#montar-caixa"
-      className="text-[#3A2418] hover:text-[#A17C52] transition-colors"
-  >
-    Monte Sua Caixa
-  </a>
-
-</nav>
+          <a
+            href="#montar-caixa"
+            className="text-[#F5E8D6]
+  hover:text-[#D5B18A] transition-colors"
+          >
+            Monte Sua Caixa
+          </a>
+        </nav>
 
         <button
-  onClick={onOpenCart}
-  className="
+          onClick={onOpenCart}
+          className="
     relative
-    text-[#6B4A2D]
-    hover:text-[#A67C52]
+    text-[#F5E8D6]
+hover:text-[#D5B18A]
     transition-colors
     duration-300
   "
->
-  <ShoppingBag
-    size={28}
-    strokeWidth={1.8}
-  />
-  
-  {totalItems > 0 && (
-    <span
-      className="
+        >
+          <ShoppingBag size={28} strokeWidth={1.8} />
+
+          {totalItems > 0 && (
+            <span
+              className="
         absolute
         -top-2
         -right-2
@@ -101,12 +107,11 @@ const totalItems = items.reduce(
         items-center
         justify-center
       "
-    >
-      {totalItems}
-    </span>
-  )}
-</button>
-
+            >
+              {totalItems}
+            </span>
+          )}
+        </button>
       </div>
     </header>
   );
