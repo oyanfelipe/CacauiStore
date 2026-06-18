@@ -18,12 +18,15 @@ export default function Hero() {
         src="images/cacaui-box.png"
         alt="Cacauí"
         className="
-      absolute
-      inset-0
-      w-full
-      h-full
-      object-cover
-    "
+    absolute
+    inset-0
+    w-full
+    h-full
+    object-cover
+
+    object-[75%_center]
+    md:object-center
+  "
       />
       <div className="absolute inset-0 bg-black/35" />
       <div className="relative z-10 max-w-7xl mx-auto w-full px-8">
@@ -39,7 +42,14 @@ export default function Hero() {
     md:pt-0"
           >
             <div className="max-w-xl">
-              <span className="uppercase tracking-[0.3em] text-[#A17C52] text-sm">
+              <span
+                className="text-5xl
+    md:text-6xl
+    font-serif
+    uppercase tracking-[0.3em]
+    text-[#A17C52]
+    drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]"
+              >
                 Cacauí
               </span>
 

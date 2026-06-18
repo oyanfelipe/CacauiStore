@@ -400,8 +400,14 @@ md:right-8
       </button>
 
       {isOpen && (
+        <>
         <div
-          className="
+      className="fixed inset-0 z-[998]"
+      onClick={() => setIsOpen(false)}
+    />
+
+    <div
+      className="
         fixed
         bottom-24
         right-6
@@ -423,25 +429,38 @@ md:right-8
         flex
         flex-col
       "
-        >
+      onClick={(e) => e.stopPropagation()}
+    >
           <div className="p-5 border-b border-white/10 flex justify-between items-center">
             <div>
               <h3 className="text-white text-xl font-serif">Cauí</h3>
 
               <p className="text-[#D8C4AC] text-sm">Anfitriã da Cacauí</p>
             </div>
+            <div className="flex items-center gap-4">
 
-            <button
-              onClick={() => setShowResetConfirm(true)}
-              className="
+    <button 
+    onClick={() => setShowResetConfirm(true)}
+    className="
       text-xs
       text-[#D8C4AC]
       hover:text-white
-      transition
-    "
-            >
-              ✨ Novo encontro
-            </button>
+      transition" >
+      ✨ Novo encontro
+    </button>
+
+    <button
+      onClick={() => setIsOpen(false)}
+      className="
+        text-2xl
+        text-[#D5C0A6]
+        hover:text-white
+      "
+    >
+      ✕
+    </button>
+
+  </div>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((message, index) => (
@@ -593,6 +612,7 @@ ${
             </button>
           </div>
         </div>
+        </>
       )}
       {showResetConfirm && (
         <div
