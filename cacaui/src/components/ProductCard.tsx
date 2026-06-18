@@ -42,6 +42,7 @@ export default function ProductCard({
 
   transition-all
   duration-500
+  
 "
     >
       <div

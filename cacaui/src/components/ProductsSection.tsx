@@ -4,16 +4,17 @@ export default function ProductsSection() {
   return (
     <section
       id="sabores"
-      className="
+      className=" 
         relative
         overflow-hidden
         py-28
         bg-[#0F0906]
+        
       "
     >
       {/* Fundo */}
       <div
-        className="
+        className=" 
           absolute
           inset-0
           bg-[radial-gradient(circle_at_70%_20%,rgba(181,124,69,.25),transparent_40%)]
@@ -103,6 +104,7 @@ export default function ProductsSection() {
 
           <div
             className="
+            caui-scroll
     flex
     gap-6
     items-start

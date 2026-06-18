@@ -3,10 +3,13 @@ export const intents = [
     intent: "greeting",
     patterns: [
       "oi",
+      "oii",
+      "oiii",
       "olá",
       "ola",
-      "eae",
+      "oie",
       "opa",
+      "eae",
       "bom dia",
       "boa tarde",
       "boa noite",
@@ -30,6 +33,26 @@ export const intents = [
       "to triste",
       "chateado",
       "desanimado",
+    ],
+  },
+  {
+    intent: "gift",
+    patterns: [
+      "presente",
+      "presentear",
+      "lembrança",
+      "dar chocolate",
+      "mimo",
+    ],
+  },
+  {
+    intent: "thanks",
+    patterns: [
+      "obrigado",
+      "obg",
+      "valeu",
+      "brigado",
+      "agradecido",
     ],
   },
 ];

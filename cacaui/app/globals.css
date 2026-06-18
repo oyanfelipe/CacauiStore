@@ -136,3 +136,14 @@ body {
     0 0 40px rgba(184,138,93,.6),
     0 0 70px rgba(184,138,93,.4);
 }
+.caui-scroll {
+  overflow-y: auto;
+
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge antigo */
+}
+
+.caui-scroll::-webkit-scrollbar {
+  width: 0 !important;
+  display: none !important;
+}

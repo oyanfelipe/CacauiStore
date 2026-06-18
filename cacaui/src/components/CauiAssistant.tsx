@@ -2,22 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import Fuse from "fuse.js";
-import { intents } from "@/lib/cauiIntents";
-import { cauiKeywords } from "@/lib/cauiKeywords";
-import { cauiThoughts } from "@/lib/cauiThoughts";
+import { intents } from "@/lib/caui/intents";
+import { cauiThoughts } from "@/lib/caui/thoughts";
+import { generateResponse } from "@/lib/caui/generateResponse";
+import { useCauiStorage } from "@/hooks/useCauiStorage";
 
-const fuse = new Fuse(
-  intents.flatMap((i) =>
-    i.patterns.map((p) => ({
-      pattern: p,
-      intent: i.intent,
-    })),
-  ),
-  {
-    keys: ["pattern"],
-    threshold: 0.4,
-  },
-);
+// ======================
+// TYPES
+// ======================
 
 type Profile = {
   name: string;
@@ -39,9 +31,20 @@ const welcomeMessages = [
 ];
 
 export default function CauiAssistant() {
+  // ======================
+  // REFS
+  // ======================
+
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // ======================
+  // UI STATE
+  // ======================
+
   const [isOpen, setIsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const [profile, setProfile] = useState<Profile>(() => {
@@ -67,9 +70,6 @@ export default function CauiAssistant() {
   });
 
   useEffect(() => {
-    localStorage.setItem("cacaui-profile", JSON.stringify(profile));
-  }, [profile]);
-  useEffect(() => {
     const saved = localStorage.getItem("cacaui-profile");
 
     if (!saved) return;
@@ -81,50 +81,49 @@ export default function CauiAssistant() {
       visits: (parsed.visits || 0) + 1,
     });
   }, []);
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (!isOpen) return;
 
-      const thought =
-        cauiThoughts[Math.floor(Math.random() * cauiThoughts.length)];
-
-      setMessages((prev) => [
-        ...prev,
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window === "undefined") {
+      return [
         {
           sender: "caui",
-          text: thought,
+          text: welcomeMessages[
+            Math.floor(Math.random() * welcomeMessages.length)
+          ],
         },
-      ]);
-    }, 120000);
+      ];
+    }
 
-    return () => clearInterval(timer);
-  }, [isOpen]);
+    const saved = localStorage.getItem("cacaui-messages");
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      sender: "caui" as const,
-      text: profile.name
-        ? `Que bom te ver novamente, ${profile.name}. 🤎`
-        : welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)],
-    },
-  ]);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+
+    return [
+      {
+        sender: "caui",
+        text: profile.name
+          ? `Que bom te ver novamente, ${profile.name}. 🤎`
+          : welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)],
+      },
+    ];
+  });
+
+  useCauiStorage(profile, messages);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages]);
-  const [input, setInput] = useState("");
+    if (!isOpen) return;
 
-  const fuse = new Fuse(
-    cauiKeywords.map((word) => ({
-      word,
-    })),
-    {
-      keys: ["word"],
-      threshold: 0.4,
-    },
-  );
+    setTimeout(() => {
+      messagesContainerRef.current?.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "auto",
+      });
+    }, 50);
+  }, [isOpen]);
+
+  const [input, setInput] = useState("");
 
   const sendMessage = () => {
     if (!input.trim()) return;
@@ -141,203 +140,17 @@ export default function CauiAssistant() {
     setInput("");
     setIsTyping(true);
 
+    // limpa qualquer timer anterior
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+    }
+
     const text = userText
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
 
-    let response =
-      "Que interessante... 🤎\n\nMe conte mais sobre esse encontro.";
-
-    // =====================
-    // MEMÓRIA DE SABORES
-    // =====================
-
-    if (text.includes("amendoa")) {
-      setProfile((prev) => ({
-        ...prev,
-        likesIntense: true,
-      }));
-    }
-
-    if (text.includes("creme") || text.includes("baunilha")) {
-      setProfile((prev) => ({
-        ...prev,
-        likesCreamy: true,
-      }));
-    }
-
-    // =====================
-    // NOME DO USUÁRIO
-    // =====================
-
-    const match = userText.match(
-      /(me chamo|meu nome e|meu nome é|sou o|sou a)\s+(.+)/i,
-    );
-
-    if (match) {
-      const nome = match[2].trim();
-
-      setProfile((prev) => ({
-        ...prev,
-        name: nome,
-      }));
-
-      response = `Prazer, ${nome}. 🤎\n\nVou guardar seu nome no meu Caderno de Encontros.`;
-    }
-
-    // =====================
-    // LEMBRAR NOME
-    // =====================
-
-    if (
-      text.includes("qual meu nome") ||
-      text.includes("vc lembra meu nome") ||
-      text.includes("voce lembra meu nome") ||
-      text.includes("lembra meu nome")
-    ) {
-      response = profile.name
-        ? `Seu nome é ${profile.name}. 🤎\n\nFoi assim que você se apresentou para mim.`
-        : "Você ainda não me contou seu nome. 🤎";
-    }
-
-    // =====================
-    // SAUDAÇÕES
-    // =====================
-
-    if (
-      text === "oi" ||
-      text === "ola" ||
-      text === "olá" ||
-      text === "oie" ||
-      text === "opa" ||
-      text === "eae" ||
-      text.includes("bom dia") ||
-      text.includes("boa tarde") ||
-      text.includes("boa noite")
-    ) {
-      const greetings = [
-        "Oi 🤎 Que bom te ver por aqui.",
-        "Olá. Eu sou a Cauí. Como está seu dia?",
-        "Seja bem-vindo à Cacauí. 🤎",
-        "Que alegria receber sua visita.",
-      ];
-
-      response = greetings[Math.floor(Math.random() * greetings.length)];
-    }
-
-    // =====================
-    // QUEM É A CAUÍ
-    // =====================
-
-    if (text.includes("quem e voce") || text.includes("quem e vc")) {
-      response = `
-Eu sou a Cauí. 🤎
-
-Anfitriã da Cacauí.
-
-Estou aqui para transformar chocolates em encontros inesquecíveis.
-`;
-    }
-
-    // =====================
-    // SABORES
-    // =====================
-
-    if (
-      text.includes("melhor sabor") ||
-      text.includes("qual sabor") ||
-      text.includes("sabor")
-    ) {
-      response = `
-Depende do encontro. 🤎
-
-Se você gosta de algo suave e acolhedor, eu iria de Creme.
-
-Se prefere algo mais marcante e crocante, Amêndoa pode ser a escolha perfeita.
-`;
-    }
-
-    // =====================
-    // FAVORITO
-    // =====================
-
-    if (text.includes("favorito") || text.includes("favorita")) {
-      response = `
-Eu nunca consigo decidir.
-
-Em alguns dias sou Creme.
-
-Em outros, completamente Amêndoa. 🌰
-`;
-    }
-
-    // =====================
-    // TRISTEZA
-    // =====================
-
-    if (
-      text.includes("triste") ||
-      text.includes("chateado") ||
-      text.includes("desanimado")
-    ) {
-      response = `
-Talvez hoje não seja dia de escolher um sabor.
-
-Talvez seja dia de se permitir um pequeno encontro consigo mesmo. 🤎
-`;
-    }
-
-    // =====================
-    // PRESENTE
-    // =====================
-
-    if (text.includes("presente")) {
-      response = `
-Chocolate é uma forma bonita de dizer:
-
-"Eu lembrei de você."
-
-Acho que presentes carregam mais valor quando criam uma lembrança. 🤎
-`;
-    }
-
-    // =====================
-    // CRIADOR
-    // =====================
-
-    if (
-      text.includes("quem criou") ||
-      text.includes("quem fez") ||
-      text.includes("fundador")
-    ) {
-      response = `A Cacauí nasceu da vontade de transformar chocolates em encontros inesquecíveis. ✨`;
-    }
-
-    // =====================
-    // MEMÓRIA
-    // =====================
-
-    if (text.includes("lembra de mim") || text.includes("o que voce lembra")) {
-      if (profile.likesIntense && profile.likesCreamy) {
-        response =
-          "Lembro que você gosta tanto de sabores suaves quanto dos mais marcantes. 🤎";
-      } else if (profile.likesIntense) {
-        response = "Lembro que você gosta de sabores mais intensos. 🌰";
-      } else if (profile.likesCreamy) {
-        response = "Lembro que você aprecia sabores suaves e acolhedores. ✨";
-      } else {
-        response = "Ainda estamos nos conhecendo. 🤎";
-      }
-    }
-
-    // =====================
-    // OBRIGADO
-    // =====================
-
-    if (text.includes("obrigado") || text.includes("valeu")) {
-      response = "Eu que agradeço sua companhia. 🤎";
-    }
+    const response = generateResponse(text, profile, userText);
 
     setTimeout(() => {
       setMessages((prev) => [
@@ -349,16 +162,39 @@ Acho que presentes carregam mais valor quando criam uma lembrança. 🤎
       ]);
 
       setIsTyping(false);
+
+      // depois da resposta da Cauí,
+      // inicia contagem de 4 minutos
+
+      inactivityTimer.current = setTimeout(() => {
+        const thought =
+          cauiThoughts[Math.floor(Math.random() * cauiThoughts.length)];
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "caui",
+            text: thought,
+          },
+        ]);
+
+        // evita enviar outra mensagem
+        inactivityTimer.current = null;
+      }, 240000);
     }, 1200);
   };
 
   const clearChat = () => {
-    setMessages([
+    const newMessages = [
       {
-        sender: "caui",
+        sender: "caui" as const,
         text: "Vamos começar um novo encontro. 🤎",
       },
-    ]);
+    ];
+
+    setMessages(newMessages);
+
+    localStorage.removeItem("cacaui-messages");
   };
 
   return (
@@ -401,20 +237,29 @@ md:right-8
 
       {isOpen && (
         <>
-        <div
-      className="fixed inset-0 z-[998]"
-      onClick={() => setIsOpen(false)}
-    />
+          <div
+            className="fixed inset-0 z-[998]"
+            onClick={() => {
+              setIsOpen(false);
 
-    <div
-      className="
+              if (inactivityTimer.current) {
+                clearTimeout(inactivityTimer.current);
+              }
+            }}
+          />
+
+          <div
+            className="
         fixed
         bottom-24
         right-6
         z-[999]
 
-        w-[380px]
-        h-[520px]
+        w-[95vw]
+max-w-[380px]
+
+h-[70vh]
+max-h-[520px]
 
         rounded-[32px]
 
@@ -429,47 +274,63 @@ md:right-8
         flex
         flex-col
       "
-      onClick={(e) => e.stopPropagation()}
-    >
-          <div className="p-5 border-b border-white/10 flex justify-between items-center">
-            <div>
-              <h3 className="text-white text-xl font-serif">Cauí</h3>
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-5 border-b border-white/10 flex justify-between items-center">
+              <div>
+                <h3 className="text-white text-xl font-serif">Cauí</h3>
 
-              <p className="text-[#D8C4AC] text-sm">Anfitriã da Cacauí</p>
-            </div>
-            <div className="flex items-center gap-4">
+                <p className="text-[#D8C4AC] text-sm">Anfitriã da Cacauí</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  className="
+    flex
+    items-center
+    gap-2
 
-    <button 
-    onClick={() => setShowResetConfirm(true)}
-    className="
-      text-xs
-      text-[#D8C4AC]
-      hover:text-white
-      transition" >
-      ✨ Novo encontro
-    </button>
+    px-3
+    py-2
 
-    <button
-      onClick={() => setIsOpen(false)}
-      className="
+    rounded-xl
+
+    bg-[#B98A5D]/10
+
+    border
+    border-[#B98A5D]/20
+
+    text-[#D8C4AC]
+
+    hover:bg-[#B98A5D]/20
+  "
+                >
+                  <span>Nova conversa</span>
+                </button>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="
         text-2xl
         text-[#D5C0A6]
         hover:text-white
       "
-    >
-      ✕
-    </button>
-
-  </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={message.sender === "user" ? "text-right" : ""}
-              >
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div
+              ref={messagesContainerRef}
+              className="caui-scroll flex-1 overflow-y-auto p-4 space-y-4"
+            >
+              {" "}
+              {messages.map((message, index) => (
                 <div
-                  className={`
+                  key={index}
+                  className={message.sender === "user" ? "text-right" : ""}
+                >
+                  <div
+                    className={`
                   inline-block
                   max-w-[85%]
                   rounded-2xl
@@ -483,14 +344,14 @@ md:right-8
                       : "bg-white/10 text-white"
                   }
                 `}
-                >
-                  {message.text}
+                  >
+                    {message.text}
+                  </div>
                 </div>
-              </div>
-            ))}
-            {isTyping && (
-              <div
-                className="
+              ))}
+              {isTyping && (
+                <div
+                  className="
       inline-flex
       gap-1
 
@@ -500,49 +361,48 @@ md:right-8
       bg-white/10
       rounded-2xl
     "
-              >
-                <div
-                  className="
+                >
+                  <div
+                    className="
         w-2 h-2
         rounded-full
         bg-white/60
         animate-bounce
       "
-                />
+                  />
 
-                <div
-                  className="
+                  <div
+                    className="
         w-2 h-2
         rounded-full
         bg-white/60
         animate-bounce
         [animation-delay:150ms]
       "
-                />
+                  />
 
-                <div
-                  className="
+                  <div
+                    className="
         w-2 h-2
         rounded-full
         bg-white/60
         animate-bounce
         [animation-delay:300ms]
       "
-                />
-              </div>
-            )}
+                  />
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
 
-            <div ref={messagesEndRef} />
-          </div>
-
-          <div className="p-4 border-t border-white/10 flex gap-2">
-            <button
-              onClick={() =>
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    sender: "caui" as const,
-                    text: `
+            <div className="p-4 border-t border-white/10 flex gap-2">
+              <button
+                onClick={() =>
+                  setMessages((prev) => [
+                    ...prev,
+                    {
+                      sender: "caui" as const,
+                      text: `
 📖 Caderno de Encontros
 
 Nome:
@@ -567,27 +427,27 @@ ${
       : "Ainda estamos nos conhecendo."
 }
 `,
-                  },
-                ])
-              }
-              className="
+                    },
+                  ])
+                }
+                className="
     text-xs
     text-[#D8C4AC]
     hover:text-white
   "
-            >
-              📖 Meu Caderno
-            </button>
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  sendMessage();
-                }
-              }}
-              placeholder="Converse com a Cauí..."
-              className="
+              >
+                📖 Meu Caderno
+              </button>
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    sendMessage();
+                  }
+                }}
+                placeholder="Converse com a Cauí..."
+                className="
     flex-1
     bg-white/10
     text-white
@@ -596,22 +456,22 @@ ${
     py-3
     outline-none
   "
-            />
+              />
 
-            <button
-              onClick={sendMessage}
-              className="
+              <button
+                onClick={sendMessage}
+                className="
             px-4
             rounded-xl
 
             bg-[#B98A5D]
             text-[#1A120D]
           "
-            >
-              →
-            </button>
+              >
+                →
+              </button>
+            </div>
           </div>
-        </div>
         </>
       )}
       {showResetConfirm && (
