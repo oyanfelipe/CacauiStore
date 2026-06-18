@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCartStore } from "@/store/cartStore";
 import { ShoppingBag } from "lucide-react";
+import { Menu } from "lucide-react";
+import { useState } from "react";
 
 interface HeaderProps {
   onOpenCart: () => void;
@@ -13,6 +15,7 @@ export default function Header({ onOpenCart }: HeaderProps) {
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
   const cartItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <header
@@ -38,9 +41,9 @@ export default function Header({ onOpenCart }: HeaderProps) {
             src="/footer-cacaui.png"
             alt="Cacauí"
             className="
-      h-16
+      h-8 
+      md:h-14
       w-auto
-      object-contain
     "
           />
         </Link>
@@ -78,22 +81,22 @@ export default function Header({ onOpenCart }: HeaderProps) {
             Monte Sua Caixa
           </a>
         </nav>
-
-        <button
-          onClick={onOpenCart}
-          className="
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onOpenCart}
+            className="
     relative
     text-[#F5E8D6]
-hover:text-[#D5B18A]
+    hover:text-[#D5B18A]
     transition-colors
     duration-300
   "
-        >
-          <ShoppingBag size={28} strokeWidth={1.8} />
+          >
+            <ShoppingBag size={28} />
 
-          {totalItems > 0 && (
-            <span
-              className="
+            {totalItems > 0 && (
+              <span
+                className="
         absolute
         -top-2
         -right-2
@@ -107,12 +110,61 @@ hover:text-[#D5B18A]
         items-center
         justify-center
       "
-            >
-              {totalItems}
-            </span>
-          )}
-        </button>
+              >
+                {totalItems}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="
+      md:hidden
+      text-[#F5E8D6]
+    "
+          >
+            <Menu size={28} />
+          </button>
+        </div>
       </div>
+      {menuOpen && (
+  <div
+    className="
+      md:hidden
+
+      absolute
+      top-full
+      left-0
+
+      w-full
+
+      bg-[#2A1A12]
+
+      border-t
+      border-[#B98A5D]/20
+    "
+  >
+    <div className="flex flex-col p-6 gap-6">
+
+      <a href="#">
+        Início
+      </a>
+
+      <a href="#sabores">
+        Nossos Encontros
+      </a>
+
+      <a href="#historia">
+        Por Trás da Cacauí
+      </a>
+
+      <a href="#montar-caixa">
+        Monte Sua Caixa
+      </a>
+
+    </div>
+  </div>
+)}
     </header>
   );
 }
