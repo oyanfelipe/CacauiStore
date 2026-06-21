@@ -35,8 +35,8 @@ export default function Home() {
       <Hero />
       <CauiAssistant />
       <ProductsSection />
-      <CacauiBoxSection />
-      <BoxBuilder />
+      {/*<CacauiBoxSection />
+      <BoxBuilder />*/}
       <StorySection />
       <EssenceSection />
       <AboutSection />
