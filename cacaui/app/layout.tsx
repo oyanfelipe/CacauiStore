@@ -18,8 +18,10 @@ export const metadata = {
   description:
     "Bombons artesanais feitos para transformar momentos em encontros inesquecíveis.",
 
-  icons: {
-    icon: "/favicon.png",
+   openGraph: {
+    title: "Cacauí",
+    description: "Bombons artesanais feitos para transformar momentos em encontros inesquecíveis.",
+    images: ["/favicon.ico"],
   },
 };
 
